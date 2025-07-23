@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Weekly Timesheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            padding: 25px;
+            background: #fafbfc;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task-item {
+            background: white;
+            border: 2px solid #e8ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .input-group input[type="text"], 
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input[type="text"]:focus, 
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .time-input {
+            width: 120px !important;
+        }
+
+        .revenue-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .revenue-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .revenue-option.revenue-generating {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .revenue-option.potential-revenue {
+            border-color: #f39c12;
+            background: #fef9e7;
+            color: #f39c12;
+        }
+
+        .revenue-option.non-revenue {
+            border-color: #e74c3c;
+            background: #fdeaea;
+            color: #e74c3c;
+        }
+
+        .revenue-option.selected {
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .add-task-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .add-task-btn:hover {
+            background: #2980b9;
+        }
+
+        .status-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .status-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .status-option.selected {
+            border-color: #3498db;
+            background: #e8f4fd;
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .capacity-input {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .capacity-input.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .revenue-selector {
+                flex-direction: column;
+            }
+            
+            .status-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Interactive Weekly Timesheet</h1>
+            <p>Fill out your weekly activities and generate your timesheet</p>
+        </div>
+
+        <div class="form-container">
+            <div class="section">
+                <h2><span class="section-icon">👤</span>Employee Information</h2>
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="employee-name" placeholder="Enter your full name">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span class="section-icon">1</span>Standard Tasks</h2>
+                <div id="standard-tasks">
+                    <div class="task-item">
+                        <button class="remove-btn" onclick="removeTask(this)">Remove</button>
+                        <div class="input-group">
+                            <label>Category Name</label>
+                            <input type="text" placeholder="Enter category name">
+                        </div>
+                        <div class="input-group">
+                            <label>Task Description</label>
+                            <textarea placeholder="Describe the task in detail"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Total Time Spent this Week (hours)</label>
+                            <input type="text" class="time-input" placeholder="e.g., 3.5">
+                        </div>
+                        <div class="revenue-selector">
+                            <div class="revenue-option revenue-generating" onclick="selectRevenue(this)">Revenue Generating</div>
+                            <div class="revenue-option potential-revenue" onclick="selectRevenue(this)">Potential Revenue</div>
+                            <div class="revenue-option non-revenue selected" onclick="selectRevenue(this)">Non-Revenue</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="add-task-btn" onclick="addTask('standard-tasks')">+ Add Standard Task</button>
+            </div>
+
+            <div class="section">
+                <h2><span class="section-icon">2</span>Non-Standard Tasks</h2>
+                <div id="non-standard-tasks">
+                    <div class="task-item">
+                        <button class="remove-btn" onclick="removeTask(this)">Remove</button>
+                        <div class="input-group">
+                            <label>Category Name</label>
+                            <input type="text" placeholder="Enter category name">
+                        </div>
+                        <div class="input-group">
+                            <label>Task Description</label>
+                            <textarea placeholder="Describe the task in detail"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Total Time Spent this Week (hours)</label>
+                            <input type="text" class="time-input" placeholder="e.g., 15.5">
+                        </div>
+                        <div class="revenue-selector">
+                            <div class="revenue-option revenue-generating" onclick="selectRevenue(this)">Revenue Generating</div>
+                            <div class="revenue-option potential-revenue" onclick="selectRevenue(this)">Potential Revenue</div>
+                            <div class="revenue-option non-revenue selected" onclick="selectRevenue(this)">Non-Revenue</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="add-task-btn" onclick="addTask('non-standard-tasks')">+ Add Non-Standard Task</button>
+            </div>
+
+            <div class="section">
+                <h2><span class="section-icon">3</span>Communication Across Team Members</h2>
+                <div class="input-group">
+                    <label>Communication Activities</label>
+                    <textarea placeholder="Describe your internal communication activities"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Total Time Spent this Week (hours)</label>
+                    <input type="text" class="time-input" placeholder="e.g., 5.0">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span class="section-icon">4</span>Status</h2>
+                <div class="status-selector">
+                    <div class="status-option" onclick="selectStatus(this, 'overtime')">Overtime</div>
+                    <div class="status-option selected" onclick="selectStatus(this, 'schedule')">On Schedule</div>
+                    <div class="status-option" onclick="selectStatus(this, 'capacity')">Available Capacity</div>
+                </div>
+                
+                <div class="input-group capacity-input" id="overtime-reason">
+                    <label>Reason for Overtime</label>
+                    <textarea placeholder="Explain why overtime was necessary"></textarea>
+                </div>
+                
+                <div class="input-group capacity-input" id="capacity-details">
+                    <label>Available Capacity & Preferred Tasks</label>
+                    <textarea placeholder="Describe your available capacity and types of tasks you'd like to contribute to"></textarea>
+                </div>
+            </div>
+
+            <button class="export-btn" onclick="generatePDF()">📄 Generate PDF Timesheet</button>
+        </div>
+    </div>
+
+    <script>
+        function selectRevenue(element) {
+            // Remove selected class from siblings
+            const siblings = element.parentNode.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('selected');
+            }
+            // Add selected class to clicked element
+            element.classList.add('selected');
+        }
+
+        function selectStatus(element, statusType) {
+            // Remove selected class from all status options
+            const siblings = element.parentNode.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('selected');
+            }
+            // Add selected class to clicked element
+            element.classList.add('selected');
+            
+            // Show/hide additional inputs based on selection
+            document.getElementById('overtime-reason').classList.remove('show');
+            document.getElementById('capacity-details').classList.remove('show');
+            
+            if (statusType === 'overtime') {
+                document.getElementById('overtime-reason').classList.add('show');
+            } else if (statusType === 'capacity') {
+                document.getElementById('capacity-details').classList.add('show');
+            }
+        }
+
+        function addTask(containerId) {
+            const container = document.getElementById(containerId);
+            const isNonStandard = containerId === 'non-standard-tasks';
+            
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            
+            taskItem.innerHTML = `
+                <button class="remove-btn" onclick="removeTask(this)">Remove</button>
+                ${isNonStandard ? `
+                <div class="input-group">
+                    <label>Category Name</label>
+                    <input type="text" placeholder="Enter category name">
+                </div>
+                <div class="input-group">
+                    <label>Task Description</label>
+                    <textarea placeholder="Describe the task in detail"></textarea>
+                </div>
+                ` : `
+                <div class="input-group">
+                    <label>Category Name</label>
+                    <input type="text" placeholder="Enter category name">
+                </div>
+                <div class="input-group">
+                    <label>Task Description</label>
+                    <textarea placeholder="Describe the task in detail"></textarea>
+                </div>
+                `}
+                <div class="input-group">
+                    <label>Total Time Spent this Week (hours)</label>
+                    <input type="text" class="time-input" placeholder="e.g., 3.5">
+                </div>
+                <div class="revenue-selector">
+                    <div class="revenue-option revenue-generating" onclick="selectRevenue(this)">Revenue Generating</div>
+                    <div class="revenue-option potential-revenue" onclick="selectRevenue(this)">Potential Revenue</div>
+                    <div class="revenue-option non-revenue selected" onclick="selectRevenue(this)">Non-Revenue</div>
+                </div>
+            `;
+            
+            container.appendChild(taskItem);
+        }
+
+        function removeTask(button) {
+            const taskItem = button.closest('.task-item');
+            taskItem.remove();
+        }
+
+        function generatePDF() {
+            // Get employee name
+            const employeeName = document.getElementById('employee-name').value || 'Not specified';
+            const currentDate = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Create PDF content HTML
+            const pdfContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Weekly Timesheet - ${employeeName}</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 20mm;
+                        }
+                        
+                        body {
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            margin: 0;
+                            padding: 0;
+                            background: white;
+                        }
+                        
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #2c3e50;
+                        }
+                        
+                        .header h1 {
+                            color: #2c3e50;
+                            font-size: 28px;
+                            margin: 0 0 10px 0;
+                            font-weight: 300;
+                        }
+                        
+                        .header-info {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 15px;
+                            font-size: 14px;
+                            color: #666;
+                        }
+                        
+                        .section {
+                            margin-bottom: 30px;
+                            break-inside: avoid;
+                        }
+                        
+                        .section h2 {
+                            color: #34495e;
+                            font-size: 18px;
+                            margin-bottom: 15px;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #bdc3c7;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+                        
+                        .section-icon {
+                            width: 20px;
+                            height: 20px;
+                            background: #3498db;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 10px;
+                            font-weight: bold;
+                        }
+                        
+                        .task-item {
+                            background: #f8f9fa;
+                            border: 1px solid #dee2e6;
+                            border-left: 4px solid #3498db;
+                            border-radius: 6px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                            break-inside: avoid;
+                        }
+                        
+                        .task-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .task-category {
+                            font-weight: bold;
+                            color: #2c3e50;
+                            font-size: 16px;
+                        }
+                        
+                        .revenue-tag {
+                            display: inline-block;
+                            padding: 4px 12px;
+                            border-radius: 20px;
+                            font-size: 11px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        
+                        .revenue-generating {
+                            background: #d4edda;
+                            color: #155724;
+                            border: 1px solid #c3e6cb;
+                        }
+                        
+                        .potential-revenue {
+                            background: #fff3cd;
+                            color: #856404;
+                            border: 1px solid #ffeaa7;
+                        }
+                        
+                        .non-revenue {
+                            background: #f8d7da;
+                            color: #721c24;
+                            border: 1px solid #f5c6cb;
+                        }
+                        
+                        .task-description {
+                            margin: 10px 0;
+                            color: #555;
+                            font-style: italic;
+                        }
+                        
+                        .task-time {
+                            font-weight: bold;
+                            color: #2c3e50;
+                        }
+                        
+                        .status-section {
+                            background: #e8f4fd;
+                            border: 2px solid #3498db;
+                            border-radius: 8px;
+                            padding: 15px;
+                            text-align: center;
+                        }
+                        
+                        .status-badge {
+                            display: inline-block;
+                            background: #3498db;
+                            color: white;
+                            padding: 8px 20px;
+                            border-radius: 25px;
+                            font-weight: bold;
+                            font-size: 14px;
+                        }
+                        
+                        .footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #666;
+                            border-top: 1px solid #dee2e6;
+                            padding-top: 20px;
+                        }
+                        
+                        .no-tasks {
+                            text-align: center;
+                            color: #666;
+                            font-style: italic;
+                            padding: 20px;
+                        }
+                        
+                        @media print {
+                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Weekly Timesheet</h1>
+                        <div class="header-info">
+                            <span><strong>Employee:</strong> ${employeeName}</span>
+                            <span><strong>Generated:</strong> ${currentDate}</span>
+                        </div>
+                    </div>
+                    
+                    ${generateTaskSection('Standard Tasks', '#standard-tasks', '1')}
+                    ${generateTaskSection('Non-Standard Tasks', '#non-standard-tasks', '2')}
+                    ${generateCommunicationSection()}
+                    ${generateStatusSection()}
+                    
+                    <div class="footer">
+                        <p>This timesheet was automatically generated from the Interactive Weekly Timesheet form.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Create and trigger PDF download
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(pdfContent);
+            printWindow.document.close();
+            
+            // Wait for content to load then print
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.focus();
+                    printWindow.print();
+                }, 500);
+            };
+        }
+        
+        function generateTaskSection(title, selector, iconNumber) {
+            const tasks = document.querySelectorAll(selector + ' .task-item');
+            
+            if (tasks.length === 0) {
+                return `
+                    <div class="section">
+                        <h2><span class="section-icon">${iconNumber}</span>${title}</h2>
+                        <div class="no-tasks">No tasks added</div>
+                    </div>
+                `;
+            }
+            
+            let tasksHTML = '';
+            tasks.forEach((task, index) => {
+                const category = task.querySelector('input[type="text"]').value || 'Untitled';
+                const description = task.querySelector('textarea').value || 'No description provided';
+                const time = task.querySelector('.time-input').value || '0';
+                const revenueElement = task.querySelector('.revenue-option.selected');
+                const revenue = revenueElement ? revenueElement.textContent : 'Not specified';
+                const revenueClass = getRevenueClass(revenue);
+                
+                tasksHTML += `
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="task-category">${index + 1}. ${category}</span>
+                            <span class="revenue-tag ${revenueClass}">${revenue}</span>
+                        </div>
+                        <div class="task-description">${description}</div>
+                        <div class="task-time">Total Time: ${time} hours</div>
+                    </div>
+                `;
+            });
+            
+            return `
+                <div class="section">
+                    <h2><span class="section-icon">${iconNumber}</span>${title}</h2>
+                    ${tasksHTML}
+                </div>
+            `;
+        }
+        
+        function generateCommunicationSection() {
+            const commSection = document.querySelector('.section:nth-child(4)'); // Adjusted selector
+            const activities = commSection.querySelector('textarea').value || 'No communication activities specified';
+            const time = commSection.querySelector('.time-input').value || '0';
+            
+            return `
+                <div class="section">
+                    <h2><span class="section-icon">3</span>Communication Across Team Members</h2>
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="task-category">Internal Communication</span>
+                            <span class="revenue-tag non-revenue">Non-Revenue</span>
+                        </div>
+                        <div class="task-description">${activities}</div>
+                        <div class="task-time">Total Time: ${time} hours</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function generateStatusSection() {
+            const statusElement = document.querySelector('.status-option.selected');
+            const status = statusElement ? statusElement.textContent : 'Not specified';
+            
+            let additionalInfo = '';
+            if (status === 'Overtime') {
+                const reason = document.querySelector('#overtime-reason textarea').value;
+                if (reason) additionalInfo = `<p><strong>Reason:</strong> ${reason}</p>`;
+            } else if (status === 'Available Capacity') {
+                const capacity = document.querySelector('#capacity-details textarea').value;
+                if (capacity) additionalInfo = `<p><strong>Available Capacity:</strong> ${capacity}</p>`;
+            }
+            
+            return `
+                <div class="section">
+                    <h2><span class="section-icon">4</span>Status</h2>
+                    <div class="status-section">
+                        <div class="status-badge">${status}</div>
+                        ${additionalInfo}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getRevenueClass(revenue) {
+            switch(revenue.trim()) {
+                case 'Revenue Generating':
+                    return 'revenue-generating';
+                case 'Potential Revenue Generating':
+                    return 'potential-revenue';
+                case 'Non-Revenue Generating':
+                    return 'non-revenue';
+                default:
+                    return 'non-revenue';
+            }
+        }
+
+        function exportTimesheet() {
+            // Keep the old function for backup
+            generatePDF();
+        }
+    </script>
+</body>
+</html>
